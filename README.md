@@ -1,7 +1,11 @@
 # Magic Tool+ ```v1.3``` by chris1384 @2024
 ***-- EXPERIMENTAL VERSION --***  
-`Upcoming: Autoupdater`
-
+`Upcoming: Autoupdater`  
+  
+SHOWCASE VIDEO:  
+[![SHOWCASE-VIDEO](https://img.youtube.com/vi/RspZGoP4TQg/mqdefault.jpg)](https://www.youtube.com/watch?v=RspZGoP4TQg)
+  
+  
 This is a tool with the purpose of duplicating objects and setting the offsets of it without manually setting the positions or rotations yourself.  
   
 There are three ways you can use this:
