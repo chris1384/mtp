@@ -1,5 +1,6 @@
 # Magic Tool+ ```v1.3``` by chris1384 @2024
-***-- EXPERIMENTAL VERSION --***
+***-- EXPERIMENTAL VERSION --***  
+`Upcoming: Autoupdater`
 
 This is a tool with the purpose of duplicating objects and setting the offsets of it without manually setting the positions or rotations yourself.  
   
