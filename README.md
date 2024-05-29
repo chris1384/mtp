@@ -1,6 +1,5 @@
 # Magic Tool+ ```v1.3``` by chris1384 @2024
 ***-- EXPERIMENTAL VERSION --***  
-`Upcoming: Autoupdater`  
   
 SHOWCASE VIDEO:  
 [![SHOWCASE-VIDEO](https://img.youtube.com/vi/RspZGoP4TQg/mqdefault.jpg)](https://www.youtube.com/watch?v=RspZGoP4TQg)
@@ -8,10 +7,11 @@ SHOWCASE VIDEO:
   
 This is a tool with the purpose of duplicating objects and setting the offsets of it without manually setting the positions or rotations yourself.  
   
-There are three ways you can use this:
+There are a multiple of ways you can use this:
 - using your `MOUSE` (Left Click, Right Click, Scroll Wheel) to position and add different adjacent models
 - using the `W, A, S, D` keys to quickly add adjacent objects (only `4 axis`)
-- rotate objects in local space using `RIGHT SHIFT` + `W, A, S, D`
+- rotate objects in local space using `RIGHT SHIFT` + `W, A, S, D, NUM+, NUM-`
+- autoplace building features using `RIGHT SHIFT` + `NUMPAD*`
 
 There are a couple of objects in which their offsets and models have been specified so you can join tracks very quickly, any object that is not part of that list won't be able to use different models, you will only be able to clone itself on `6 axis` by default (works with any object in the game).
 
