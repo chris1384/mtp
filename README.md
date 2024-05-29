@@ -7,7 +7,7 @@ SHOWCASE VIDEO:
   
 This is a tool with the purpose of duplicating objects and setting the offsets of it without manually setting the positions or rotations yourself.  
   
-There are a multiple of ways you can use this:
+There are multiple ways you can use this:
 - using your `MOUSE` (Left Click, Right Click, Scroll Wheel) to position and add different adjacent models
 - using the `W, A, S, D` keys to quickly add adjacent objects (only `4 axis`)
 - rotate objects in local space using `RIGHT SHIFT` + `W, A, S, D, NUM+, NUM-`
