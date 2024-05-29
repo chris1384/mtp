@@ -17,7 +17,7 @@ allowDropping = true -- if you don't press any editor object, just deselect the 
 freecamDrop = false -- drop selected element after switching to freecam
 freecamShowPreviews = true -- show previews during freecam, you can get buggy behaviour (zooming objects)
 spawnMode = "both" -- select spawn mode, this can be: "click", "binds", "both", "none" (use only local rotations feature)
-invertScrollWheel = true -- invert scroll wheel for model change (useful for touchpads)
+invertScrollWheel = false -- invert scroll wheel for model change (useful for touchpads)
 
 overlapThreshold = 0.3 -- overlap radius, preventing objects being stuck to one another. set to 0 to disable (NOT RECOMMENDED)
 
@@ -43,7 +43,7 @@ previewListOffsets = {x = 40, y = 340} -- list offset
 
 toggleLocalRotation = true -- rotate selected object to a specified angle on an axis. usage: RIGHT SHIFT + W/A/S/D
 localRotationY = true -- enable local rotations on the Y axis. usage: RIGHT SHIFT + NUMPAD+ / NUMPAD-
-localRotationAngle = 30 -- rotation angle duuh
+localRotationAngle = 15 -- rotation angle duuh
 
 buildingFeaturesKey = nil
 --[[
