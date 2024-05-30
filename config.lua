@@ -45,7 +45,7 @@ toggleLocalRotation = true -- rotate selected object to a specified angle on an 
 localRotationY = true -- enable local rotations on the Y axis. usage: RIGHT SHIFT + NUMPAD+ / NUMPAD-
 localRotationAngle = 15 -- rotation angle duuh
 
-buildingFeaturesKey = nil
+buildingFeaturesKey = "num_mul"
 --[[
 	add building features like windows, shadows, meshes or any extra object. 
 	this is not being filtered from track objects, so be careful on how you use this.
