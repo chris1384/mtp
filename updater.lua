@@ -8,7 +8,7 @@
 	* Have fun mapping! - chris1384 <3
 ]]
 
-local autoUpdate = true -- // make MT+ auto-update itself, set this to false or delete this file to remove the auto-update feature
+local autoUpdate = true -- // make MT+ auto-update itself, set this to 'false' or delete this file to remove the auto-update feature
 
 local filesFetched = 0
 local remoteFiles = {}
@@ -26,7 +26,11 @@ function queueGitRepo() -- starting sequence
 	if not autoUpdate then return end
 	
 	if not hasObjectPermissionTo(resource, "function.fetchRemote") then 
-		outputDebugString("[SERVER-MT+]: Resource is not allowed to fetch GitHub updates using 'fetchRemote', please add it to 'Admin' group.", 0, 255, 100, 100) 
+		setTimer(function()
+			local resourceName = getResourceName(getThisResource())
+			outputChatBox("[SERVER-MT+] #FFFFFFResource is #AA0000not allowed #FFFFFFto auto-update itself, please allow it using #FF64FF'/aclrequest allow "..resourceName.." all'#FFFFFF then restart!", root, 255, 100, 255, true) 
+			outputDebugString("[SERVER-MT+]: Resource is not allowed to fetch GitHub updates using 'fetchRemote', please allow it using '/aclrequest allow "..resourceName.." all' then restart!", 0, 255, 100, 100) 
+		end, 1000, 1)
 		return 
 	end
 	
