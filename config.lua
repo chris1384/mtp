@@ -20,13 +20,21 @@ freecamShowPreviews = true -- show previews during freecam, you can get buggy be
 spawnMode = "both" -- select spawn mode, this can be: "click", "binds", "both", "none" (use only local rotations feature)
 invertScrollWheel = false -- invert scroll wheel for model change (useful for touchpads)
 
-overlapThreshold = 0.3 -- overlap radius, preventing objects being stuck to one another. set to 0 to disable (NOT RECOMMENDED)
+overlapThreshold = 0.1 -- overlap radius, preventing objects being stuck to one another. set to 0 to disable (NOT RECOMMENDED)
 
 obeyEditorDistanceLimit = true 
 --[[ 	
 	prevents the player from creating objects (using CLICKS) that are too far. (over 155 units)
 	setting to true limits the distance to which objects are created, but can not appeal to player gameplay.
 	setting to false allows to create objects far beyond this limit, but can create editor errors.
+	UPDATE: it has been fixed in this commit https://github.com/multitheftauto/mtasa-resources/pull/495
+]]
+
+hoverGhostDirection = false
+--[[
+	by default, do not let the player change the offset direction if their cursor is already on a ghost element
+	due to players using the older editor, this can affect their mapping session by picking up elements by mistake using RIGHT CLICK
+	it's recommended to let this as false if that's the case, otherwise, set it to true if that appeals more to you
 ]]
 
 selectNewClick = true -- select new element after it spawned using click
