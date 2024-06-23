@@ -11,7 +11,8 @@
 -- // edit to your liking
 
 toggleBind = "x" -- toggle tool bind
-alternativeModelChangeBind = nil -- set a bind to change model list, use "key" (ex: "n") to enable this. set to nil to disable
+alternativeModelChangeBinds = {",", "."} -- set binds to change the model to spawn, it can be an array, a single key string ("n") for +1 only, or false to disable
+alternativeDirectionChangeBinds = {"[", "]"} -- set binds to change the direction of spawning, it can be an array, a single key string ("m") for +1 only, or false to disable
  
 allowDropping = true -- if you don't press any editor object, just deselect the main element
 freecamDrop = false -- drop selected element after switching to freecam
