@@ -10,9 +10,10 @@
 
 -- // edit to your liking
 
-toggleBind = "x" -- toggle tool bind
-alternativeModelChangeBinds = {",", "."} -- set binds to change the model to spawn, it can be an array, a single key string ("n") for +1 only, or false to disable
-alternativeDirectionChangeBinds = {"[", "]"} -- set binds to change the direction of spawning, it can be an array, a single key string ("m") for +1 only, or false to disable
+--[[
+	// NOTICE!!!
+	// KEY BINDINGS have been moved to MTA:SA Settings > Binds
+]]
  
 allowDropping = true -- if you don't press any editor object, just deselect the main element
 freecamDrop = false -- drop selected element after switching to freecam
@@ -54,13 +55,6 @@ toggleLocalRotation = true -- rotate selected object to a specified angle on an 
 localRotationY = true -- enable local rotations on the Y axis. usage: RIGHT SHIFT + NUMPAD+ / NUMPAD-
 localRotationAngle = 15 -- rotation angle duuh
 
-buildingFeaturesKey = "num_mul"
---[[
-	add building features like windows, shadows, meshes or any extra object. 
-	this is not being filtered from track objects, so be careful on how you use this.
-	to enable this, use "key" (ex: "h"). my preference:   "num_mul"   (NUMPAD *)
-	to disable, set this to nil
-]]
 buildFeaturesWindowsOnly = false 
 --[[
 	create building features using only the second offset entry (should be nighttime windows, offsets do vary a lot)
