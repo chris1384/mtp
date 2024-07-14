@@ -51,12 +51,16 @@ bindPreview = true -- show click previews on objects spawning with binds
 renderPreviewList = true -- show the count of custom offsets
 previewListOffsets = {x = 40, y = 340} -- list offset
 
-toggleLocalRotation = true -- rotate selected object to a specified angle on an axis. usage: RIGHT SHIFT + W/A/S/D
-localRotationY = true -- enable local rotations on the Y axis. usage: RIGHT SHIFT + NUMPAD+ / NUMPAD-
+toggleLocalRotation = true -- rotate selected object to a specified angle on an axis.
+localRotationY = true -- enable local rotations on the Y axis.
 localRotationAngle = 15 -- rotation angle duuh
+
+toggleLocalPositioning = true -- toggle local movement
+localPositionSpeed = 1 -- position scaling, it's multiplying the users editor config (not recommended to edit)
 
 buildFeaturesWindowsOnly = false 
 --[[
+	*potentially unwanted setting*
 	create building features using only the second offset entry (should be nighttime windows, offsets do vary a lot)
 	this is recommended on parts where there are a lot of objects and you don't want to cram useless features.
 	this boils down to mappers preference, either optimization or vanity.
@@ -65,6 +69,8 @@ buildFeaturesWindowsOnly = false
 enableSelectedShader = true -- highlight the selected element
 highlightColor = {1, 0.3, 0, 1} -- shader color (float4 RGBA values)
 highlightRotationColor = {0, 0, 1, 1} -- shader color (float4 RGBA values)
+highlightPositionColor = {1, 0, 0.25, 1} -- shader color (float4 RGBA values)
+highlightPositionSlowColor = {1, 0, 0, 1} -- shader color (float4 RGBA values)
 
 toggleDebug = false -- spam debugscript
 
