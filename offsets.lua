@@ -1053,6 +1053,11 @@ mtpData = {
 	-- //
 }
 
+-- // EXPORTED DATA
+function getMTPData()
+	return mtpData
+end
+
 -- // DEVELOPER COMMANDS
 local offsetX, offsetY, offsetZ = 0, 0, 0
 
