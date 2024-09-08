@@ -8,6 +8,8 @@
 	
 	<script src="server.luac" type="server"/>
 	<script src="updater.lua" type="server"/>
+
+	<export function="getMTPData" type="client"/>
 	
 	<aclrequest>
 		<right name="function.fetchRemote" access="true" />
