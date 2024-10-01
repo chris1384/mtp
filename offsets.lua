@@ -204,7 +204,17 @@ mtpData = {
 	[3095] = {
 		{3095, {{9, 0, 0}, {-9, 0, 0}, {0, 9, 0}, {0, -9, 0}, {0, 0, 0.552}, {0, 0, -0.552}}},
 	},
-
+	
+	-- // Big Loop Kickstart
+	[13592] = {
+		{13592, {{20.558105, -6.651001, 0}, {-20.558105, 6.651001, 0}, {1.104004, 7.384888, 0}, {-1.104004, -7.384888, 0}, {0, 0, 21.321}, {0, 0, -21.321}}},
+	},
+	
+	-- // Small Loop Kickstart
+	[13666] = {
+		{13666, {{3.69377, -0.5521, 0}, {-3.69377, 0.5521, 0}, {3.449, 10.267, 0}, {-3.449, -10.267, 0}, {0, 0, 10.658}, {0, 0, -10.658}}},
+	},
+	
 	-- //
 	-- // END
 	-- //
@@ -358,6 +368,10 @@ mtpData = {
 		{3117, {{3.57, 0, 0}, {-3.57, 0, 0}, {0, 2.12, 0}, {0, -2.12, 0}, {0, 0, 0.24}, {0, 0, -0.24}}},
 	},
 	
+	-- // vgschurch02
+	[8131] = {
+		{8131, {{5.9832, 0, 0}, {-5.9832, 0, 0}, {0, 5.9832, 0}, {0, -5.9832, 0}, {0, 0, 21.387}, {0, 0, -21.387}, {0, 0, -21.3863, 0, 180, 270}}},
+	},
 	
 	-- //
 	-- // END
@@ -1186,10 +1200,10 @@ addCommandHandler("getoffset", function()
 		z = z - offsetZ
 		local rx, ry, rz = getElementRotation(selected)
 		if rx == 0 and ry == 0 and rz == 0 then
-			local rotoutput = string.format("{%.04f, %.04f, %.04f}, ", float(x), float(y), float(z))
-			outputChatBox(string.gsub("{"..tostring(id)..", {"..string.rep(rotoutput, 4).."}},", "}, }}", "}}}"))
+			local rotoutput = string.format("{%.06f, %.06f, %.06f}, ", x, y, z)
+			outputChatBox(string.gsub("{"..tostring(id)..", {"..rotoutput.."}},", "}, }}", "}}}"))
 		else
-			outputChatBox(string.format("{%s, {{%.04f, %.04f, %.04f, %.04f, %.04f, %.04f}}},", tostring(id), float(x), float(y), float(z), float(rx), float(ry), float(rz)))
+			outputChatBox(string.format("{%s, {{%.04f, %.04f, %.04f, %.04f, %.04f, %.04f}}},", tostring(id), x, y, z, rx, ry, rz))
 		end
 	else
 		outputChatBox("no selected element")
