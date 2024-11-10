@@ -1,5 +1,5 @@
 <a href='https://buymeacoffee.com/chris1384' target="_blank"><img alt='Buy me a Coffee!' src='https://img.shields.io/badge/Buy%20Me%20A%20Coffee!-FF8000'/></a>
-# Magic Tool+ `v1.4` by chris1384 @2024
+# Magic Tool+ `v1.4.1` by chris1384 @2024
 ***-- ON-GOING EXPERIMENTAL VERSION --***  
   
 SHOWCASE VIDEO:  
