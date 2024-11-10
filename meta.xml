@@ -1,12 +1,12 @@
 <meta>
-	<info author="chris1384" version="1.4" name="Magic Tool+" type="script" description="Cloning has been nerfed."/>
+	<info author="chris1384" version="1.4.1" name="Magic Tool+" type="script" description="Cloning has been nerfed."/>
 	<min_mta_version client="1.5.6-9.18728" server="1.5.6-9.18728"></min_mta_version>
 	
-	<script src="client.luac" type="client" cache="false"/>
+	<script src="client.lua" type="client" cache="false"/>
 	<script src="offsets.lua" type="client"/>
 	<script src="config.lua" type="client"/>
 	
-	<script src="server.luac" type="server"/>
+	<script src="server.lua" type="server"/>
 	<script src="updater.lua" type="server"/>
 
 	<export function="getMTPData" type="client"/>
