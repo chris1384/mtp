@@ -905,7 +905,6 @@ function onKey(button, state)
 								rx, ry, rz = rotateX(rx, ry, rz, rxAdditional)
 								rx, ry, rz = rotateY(rx, ry, rz, ryAdditional)
 
-								local additions = data[previewModel][2][previewDirection][7]
 								if additions and type(additions) == "table" then
 									if additions.scale ~= nil and type(additions.scale) == "number" then
 										scale = scale * additions.scale
@@ -1197,9 +1196,9 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 				if data then
 					local additions = data[previewModel][2][previewDirection][7]
 					if additions and type(additions) == "table" then
-						if additions.scale ~= nil and type(additions.scale) == "number" then
-							scale = scale * additions.scale
-						end
+						-- if additions.scale ~= nil and type(additions.scale) == "number" then
+							-- scale = scale * additions.scale
+						-- end
 						if additions.doublesided ~= nil and type(additions.doublesided) == "boolean" then
 							doublesided = additions.doublesided
 						end
