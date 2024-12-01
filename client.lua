@@ -745,6 +745,7 @@ function onKey(button, state)
 			end
 			
 			if not exports["move_freecam"]:getAttachedElement() then
+				exports["editor_main"]:dropElement(true)
 				exports["editor_main"]:selectElement(selectedElement, 2)
 			end
 			
@@ -980,6 +981,8 @@ function onKey(button, state)
 			if selectedBlip then
 				setBlipColor(selectedBlip, highlightColor[1]*255, highlightColor[2]*255, highlightColor[3]*255, highlightColor[4]*255)
 			end
+			exports["editor_main"]:dropElement(true)
+			exports["editor_main"]:selectElement(selectedElement, 2)
 		end
 		
 		createPreviewElements()	
