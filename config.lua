@@ -1,10 +1,10 @@
 --[[
 	* Magic Tool+ (MTP) by chris1384 @2024 (youtube.com/chris1384)
 	* Original idea by Mirage (Mirage's Magic Tool - MMT)
-	* This script was made from scratch. 
+	* This script was made from scratch.
 	* Do not redistribute this (under other names) without my permission, do not edit & upload without my permission or take any credit from it.
 	* For any questions, bug reports or any suggestions, send a message to @chris1384 on Discord.
-	
+
 	* Have fun mapping! - chris1384 <3
 ]]
 
@@ -14,7 +14,7 @@
 	// NOTICE!!!
 	// KEY BINDINGS have been moved to MTA:SA Settings > Binds
 ]]
- 
+
 allowDropping = true -- if you don't press any editor object, just deselect the main element
 freecamDrop = false -- drop selected element after switching to freecam
 freecamShowPreviews = true -- show previews during freecam, you can get buggy behaviour (zooming objects)
@@ -23,8 +23,8 @@ invertScrollWheel = false -- invert scroll wheel for model change (useful for to
 
 overlapThreshold = 0.1 -- overlap radius, preventing objects being stuck to one another. set to 0 to disable (NOT RECOMMENDED)
 
-obeyEditorDistanceLimit = true 
---[[ 	
+obeyEditorDistanceLimit = true
+--[[
 	prevents the player from creating objects (using CLICKS) that are too far. (over 155 units)
 	setting to true limits the distance to which objects are created, but can not appeal to player gameplay.
 	setting to false allows to create objects far beyond this limit, but can create editor errors.
@@ -58,7 +58,14 @@ localRotationAngle = 15 -- rotation angle duuh
 toggleLocalPositioning = true -- toggle local movement
 localPositionSpeed = 1 -- position scaling, it's multiplying the users editor config (not recommended to edit)
 
-buildFeaturesWindowsOnly = false 
+ignoreRotated2DFX = true
+--[[
+	certain buildings have custom corona effects assigned to an object which can be spawned automatically using the features bind
+	most of the time this object may be unnecessary to be spawned since these effects do not appear if the object is rotated on X/Y axis (~ 16.26 corona threshold)
+	if you want to save some resources and not fill up your object stream pool on a particular area, please keep this setting enabled to avoid these oversights
+]]
+
+buildFeaturesWindowsOnly = false
 --[[
 	*potentially unwanted setting*
 	create building features using only the second offset entry (should be nighttime windows, offsets do vary a lot)

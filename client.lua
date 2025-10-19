@@ -1,10 +1,10 @@
 --[[
 	* Magic Tool+ (MTP) by chris1384 @2024 (youtube.com/chris1384)
 	* Original idea by Mirage (Mirage's Magic Tool - MMT)
-	* This script was made from scratch. 
+	* This script was made from scratch.
 	* Do not redistribute this (under other names) without my permission, do not edit & upload without my permission or take any credit from it.
 	* For any questions, bug reports or any suggestions, send a message to @chris1384 on Discord.
-	
+
 	* Have fun mapping! - chris1384 <3
 ]]
 
@@ -85,10 +85,11 @@ local keyBindings = {
 addEventHandler("onClientResourceStart", root, function(started)
 
 	if started == getThisResource() then
-	
-		prompt("Magic Tool$$+ v1.4.1 ##by #FFAAFFchris1384 ##has $$started##!")
+
+		prompt("Magic Tool$$+ v1.4.2 ##by #FFAAFFchris1384 ##has $$started##!")
 		prompt("Use $$/mtphelp ##to see commands!")
-		
+
+		-- // Load offsets.lua
 		if mtpData and type(mtpData) == "table" then
 			for model, data in pairs(mtpData) do
 				for k, v in ipairs(data) do
@@ -99,41 +100,91 @@ addEventHandler("onClientResourceStart", root, function(started)
 						end
 					end
 				end
-				
+
 			end
 			positionData = mtpData
 		end
-		
+
+		-- // Load secret userconfig.lua (debug only)
+		--[[
+
+			* Want to add your own userconfig? create the userconfig.lua in your mods folder (NOT SERVER) and add the contents as such (same as offset.lua):
+
+				return {
+					[3458] = {
+						{3458, {{0, 0, 2}, {0, 0, -2}}},
+						{8558, {{0, 0, 2}, {0, 0, -2}}},
+						{8553, {{0, 0, 2}, {0, 0, -2}}},
+					},
+					-- models.. models.. offsets.. etc..
+				}
+
+		]]
+		local userConfigData = nil
+
+		if fileExists("userconfig.lua") then
+			local file = fileOpen("userconfig.lua")
+			if file then
+				userConfigData = fileRead(file, fileGetSize(file))
+				fileClose(file)
+			end
+
+			-- // Import new offsets
+			local func, err = loadstring(userConfigData)
+			local success, result = pcall(func)
+			if success then
+				local userOffsets = type(result) == "table" and result
+				if userOffsets then
+					for model,modelData in pairs(userOffsets) do
+						for modelIndex,modelOffsets in ipairs(modelData) do
+							for offsetIndex, offsetData in ipairs(modelOffsets[2]) do
+								if not positionData[model] then
+									positionData[model] = {}
+								else
+									local targetModel = getModelOffsetPosition(model, modelOffsets[1])
+									if not positionData[model][targetModel] then
+										positionData[model][targetModel] = {modelOffsets[1], {}}
+									end
+									table.insert(positionData[model][targetModel][2], offsetData)
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+
+
 		for commandName, commandData in pairs(defaultControls) do
-			bindKey(commandData.key or "", "down", commandData.friendlyName) 
-			bindKey(commandData.alt or "", "down", commandData.friendlyName) 
+			bindKey(commandData.key or "", "down", commandData.friendlyName)
+			bindKey(commandData.alt or "", "down", commandData.friendlyName)
 			bindKey(commandData.alt2 or "", "down", commandData.friendlyName)
 			bindKey(commandData.alt3 or "", "down", commandData.friendlyName)
 		end
-		
+
 		if not toggleDebug then
 			function outputDebugString() -- XD
 			end
 		end
-		
-		
+
+
 	elseif getResourceName(started) == "editor_main" then
 		prompt("Magic Tool$$+ ##is now #64FF64ready ##to be activated!")
 		--editorControls = exports["editor_main"]:getControls()
 	end
-	
+
 end)
 
 addEventHandler("onClientResourceStop", root, function(stopped)
 	if stopped == getThisResource() then
 		--prompt("Magic Tool$$+ ##resource has been $$stopped##!")
-		
+
 		local lockedElement = getElementData(localPlayer, "mtp:selectedElement")
 		if lockedElement then
 			triggerServerEvent("doUnlockElement", lockedElement)
 			setElementData(localPlayer, "mtp:selectedElement", nil, false)
 		end
-		
+
 	elseif getResourceName(stopped) == "editor_main" then
 		prompt("Magic Tool$$+ ##has been $$disabled ##due to editor stopping!")
 		toolEnabled = false
@@ -148,7 +199,7 @@ addCommandHandler("mtphelp", function(cmd, pageArg)
 	local numpadOutputs = string.format("%s | %s | %s | %s | %s | %s", getControlBindings("mtp_move_front", true), getControlBindings("mtp_move_left", true), getControlBindings("mtp_move_back", true), getControlBindings("mtp_move_right", true), getControlBindings("mtp_move_up", true), getControlBindings("mtp_move_down", true))
 	local updownOutput = string.format("%s | %s", getControlBindings("mtp_quick_up", true), getControlBindings("mtp_quick_down", true))
 	local scrollupdownOutput = string.format("%s | %s", getControlBindings("mtp_model_u", true), getControlBindings("mtp_model_d", true))
-	
+
 	local all_commands = {
 		"$$/mtphelp ##[page number] $$- ##show commands from a page",
 		"",
@@ -170,28 +221,28 @@ addCommandHandler("mtphelp", function(cmd, pageArg)
 	local page_count = math.ceil(#all_commands/page_setting_elements)
 	local page_target = math.max(0, math.min(tonumber(pageArg) or 1, page_count))
 	local page_rows = page_setting_elements*(page_target-1)
-	
+
 	prompt("")
 	prompt("Commands List $$(page "..tostring(page_target).."/"..tostring(page_count)..")##:", 255, 100, 100)
 	for i=1+page_rows,page_setting_elements+page_rows do
 		prompt(all_commands[i], 255, 100, 100)
 	end
-	
+
 	all_commands = nil
-		
+
 end)
 
 function toolToggle()
 
 	if toolEnabled then
-	
+
 		toolEnabled = false
 		destroyPreviews()
 		mainElementShader()
-		
+
 		if bindCreateTimer then if isTimer(bindCreateTimer) then killTimer(bindCreateTimer) end bindCreateTimer = nil end
 		blockedBinds = false
-		
+
 		guiFocusCancel = false
 
 		if isTimer(keyboardBlockEventTimer) then
@@ -199,13 +250,13 @@ function toolToggle()
 			keyboardBlockEventTimer = nil
 		end
 		removeDebugHook("preFunction", cancelKeyboardEvents)
-		
+
 		elementHasBeenMoved = false
 		if isTimer(moveLocalElementTimer) then
 			killTimer(moveLocalElementTimer)
 			moveLocalElementTimer = nil
 		end
-		
+
 		if not exports["editor_main"]:getSelectedElement() then
 			local lockedElement = getElementData(localPlayer, "mtp:selectedElement")
 			if lockedElement then
@@ -213,7 +264,7 @@ function toolToggle()
 				setElementData(localPlayer, "mtp:selectedElement", nil, false)
 			end
 		end
-		
+
 	else
 		if not getResourceFromName("editor_main") then
 			prompt("Magic Tool$$+ ##was $$unable ##to start: $$editor_main ##is not activated!")
@@ -221,34 +272,34 @@ function toolToggle()
 		end
 		if editorForceCancel then
 			prompt("Failed to enable the tool, $$'onEditorSuspended' ##got triggered.")
-			return 
+			return
 		end
 		toolEnabled = true
 		destroyPreviews()
-		
+
 		while true do
-		
+
 			if spawnMode == "none" then break end
-		
+
 			local editorSelected = exports["editor_main"]:getSelectedElement()
 			if editorSelected and getElementType(editorSelected) == "object" then
 				selectedElement = editorSelected
 			end
-			
+
 			if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
 				mainElementShader(selectedElement, true)
-				
+
 				if freecamShowPreviews then
 					createPreviewElements()
 				end
 			else
 				selectedElement = nil
 			end
-			
+
 			break
-			
+
 		end
-		
+
 	end
 	prompt("The tool has been " .. (toolEnabled == true and "#00CC00ENABLED" or "#CC0000DISABLED") .. "##!")
 	outputDebugString("[MT+] Tool " .. (toolEnabled == true and "enabled" or "disabled") .. ".", debugLevel, 0, 255, 0)
@@ -256,15 +307,15 @@ end
 
 function editorEvents()
 
-	if eventName == "onFreecamMode" and freecamDrop then 
+	if eventName == "onFreecamMode" and freecamDrop then
 		selectedElement = nil
 		outputDebugString("[MT+] Dropped element on 'freecamDrop'.", debugLevel, 0, 255, 0)
-		
+
 	elseif eventName == "onCursorMode" then
 		if getKeyState("w") or getKeyState("a") or getKeyState("s") or getKeyState("d") then
 			blockedBinds = true
 		end
-		
+
 		if toolEnabled then
 			if (selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension()) then
 				destroyPreviews()
@@ -273,16 +324,16 @@ function editorEvents()
 				outputDebugString("[MT+] Reselecting main element on 'onCursorMode'.", debugLevel, 0, 255, 0)
 			end
 		end
-		
+
 		return
-		
+
 	elseif eventName == "onEditorSuspended" then
 		editorForceCancel = true
 		outputDebugString("[MT+] 'onEditorSuspended' triggered.", debugLevel, 0, 255, 0)
-		
+
 		destroyPreviews()
 		mainElementShader()
-		
+
 		if bindCreateTimer then if isTimer(bindCreateTimer) then killTimer(bindCreateTimer) end bindCreateTimer = nil end
 		blockedBinds = false
 
@@ -297,12 +348,12 @@ function editorEvents()
 			killTimer(moveLocalElementTimer)
 			moveLocalElementTimer = nil
 		end
-		
+
 	elseif eventName == "onEditorResumed" then
 		editorForceCancel = false
 		guiFocusCancel = false
 		outputDebugString("[MT+] 'onEditorResumed' triggered.", debugLevel, 0, 255, 0)
-		
+
 		if toolEnabled then
 			if (selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension()) then
 				destroyPreviews()
@@ -314,15 +365,15 @@ function editorEvents()
 			end
 		end
 	end
-	
+
 	if allowDropping and not freecamShowPreviews then
 		mainElementShader()
-		
+
 	elseif not freecamShowPreviews then
 		destroyPreviews()
-		
+
 	end
-	
+
 end
 for _,editorEventsList in ipairs({"onCursorMode", "onFreecamMode", "onEditorSuspended", "onEditorResumed"}) do
 	addEvent(editorEventsList)
@@ -344,25 +395,25 @@ function onKey(button, state)
 	-- // MOUSE KEYS
 
 	if button == "mouse1" or button == "mouse2" then
-	
+
 		if spawnMode == "none" then return end
-		
+
 		if exports["editor_main"]:getMode() == 2 then
-		
+
 			if not hoverGhostDirection then return end
-			
-			if state then 
+
+			if state then
 				destroyPreviews()
 				if freecamShowPreviews then
 					createPreviewElements()
 				end
-				return 
+				return
 			end
-			
+
 			local cameraData = {exports["editor_main"]:processCameraLineOfSight()}
-			
+
 			if button == "mouse2" then
-			
+
 				if (selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension()) then
 					if not exports["move_freecam"]:getAttachedElement() and getPreviewCount() > 0 then
 						onClick("right", "up", false, false, cameraData[1], cameraData[2], cameraData[3], nil)
@@ -372,26 +423,26 @@ function onKey(button, state)
 						createPreviewElements()
 					end
 				end
-			
+
 			end
-		
-		
+
+
 		elseif exports["editor_main"]:getMode() == 1 then
-		
-			if state then 
+
+			if state then
 				destroyPreviews()
 				if freecamShowPreviews then
 					createPreviewElements()
 				end
-				return 
+				return
 			end
-		
+
 			local cameraData = {exports["editor_main"]:processCameraLineOfSight()}
-			
+
 			-- // LEFT KEY
-			
+
 			if button == "mouse1" then
-			
+
 				if cameraData[4] then
 					if cameraData[4] and getElementType(cameraData[4]) == "object" then
 						if previewElements[cameraData[4]] then
@@ -402,9 +453,9 @@ function onKey(button, state)
 						onClick("left", "up", false, false, cameraData[1], cameraData[2], cameraData[3], cameraData[4], {doNotCancel = true})
 						return
 					end
-				
+
 				else
-				
+
 					if allowDropping then
 						--cancelEvent(true)
 						selectedElement = nil
@@ -413,13 +464,13 @@ function onKey(button, state)
 						outputDebugString("[MT+] Dropped main element.", debugLevel, 0, 255, 0)
 						return
 					end
-					
+
 				end
-					
+
 			-- // RIGHT KEY
-			
+
 			else
-			
+
 				if (selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension()) then
 					if not exports["move_freecam"]:getAttachedElement() and getPreviewCount() > 0 then
 						onClick("right", "up", false, false, cameraData[1], cameraData[2], cameraData[3], nil)
@@ -430,63 +481,63 @@ function onKey(button, state)
 					end
 				end
 			end
-			
+
 		end
-		
+
 	-- // QUICK DIRECTION spawn
-	
+
 	elseif button == isControlPressed(button, "mtp_direction_spawn") then
-	
+
 	--[[
 		if exports["editor_main"]:getMode() == 1 then
 			return
 		end
 	]]
-		if bindsFarClip and not (isElement(selectedElement) and isElementStreamedIn(selectedElement)) then 
+		if bindsFarClip and not (isElement(selectedElement) and isElementStreamedIn(selectedElement)) then
 			return
 		end
 
-		if state then 
+		if state then
 			destroyPreviews()
 			if freecamShowPreviews then
 				createPreviewElements()
 			end
-			return 
+			return
 		end
-		
+
 		exports["editor_main"]:dropElement(true, true)
-		
+
 		local cameraData = {exports["editor_main"]:processCameraLineOfSight()}
-		
+
 		for k,v in pairs(previewElements) do
 			onClick("left", "up", false, false, cameraData[1], cameraData[2], cameraData[3], k, {doNotCancel = true})
 			return true
 		end
-		
-		
+
+
 	-- // SCROLL WHEEL
-		
+
 	elseif button == isControlPressed(button, "mtp_model_u") or button == isControlPressed(button, "mtp_model_d") then
-	
+
 		if button == "mouse_wheel_down" or button == "mouse_wheel_up" then
 			if not state then return end
 		else
 			if state then return end
 		end
-	
+
 		if spawnMode == "none" then return end
-	
+
 		if not (selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension()) then return end
-		
+
 		cancelEvent(true)
-		
+
 		local model = getElementModel(selectedElement)
 		local data = positionData[model]
-		
+
 		if data then
-		
+
 			local scrollWheelButton = (invertScrollWheel == true and isControlPressed(button, "mtp_model_d")) or isControlPressed(button, "mtp_model_u")
-			
+
 			if isControlPressed(button, "mtp_model_d") then
 				previewModel = previewModel - 1
 				if previewModel < 1 then
@@ -498,71 +549,71 @@ function onKey(button, state)
 					previewModel = 1
 				end
 			end
-			
+
 			if not data[previewModel] then previewModel = 1 end
 			if not data[previewModel][2][previewDirection] then previewDirection = 1 end
 
 			if not savedDirections[model] then savedDirections[model] = {} end
 			savedDirections[model].previewModel = previewModel
 			savedDirections[model].previewDirection = previewDirection
-			
+
 			destroyPreviews()
 			createPreviewElements()
-			
+
 			outputDebugString("[MT+] Selected preview model: "..tostring(previewModel), debugLevel, 0, 255, 0)
-			
+
 			return true
-		
+
 		end
-	
+
 	-- // LOCAL POSITIONING
-	
+
 	elseif toggleLocalPositioning and (isControlPressed("mtp_toggle_lpos") or isControlPressed("mtp_toggle_lpos_s")) then
-	
+
 		if not (selectedElement and isElement(selectedElement)) then
 			mainElementShader()
 			selectedElement = nil
-			
+
 			keyboardBlockEventTimer = setTimer(function()
 				removeDebugHook("preFunction", cancelKeyboardEvents)
 			end, 500, 1)
-			
+
 			if isTimer(moveLocalElementTimer) then
 				killTimer(moveLocalElementTimer)
 				moveLocalElementTimer = nil
 			end
-			
+
 			return
 		end
 
-		if state then 
-		
+		if state then
+
 			-- // ON PRESS
-		
+
 			if (spawnMode == "none") then
 				selectedElement = exports["editor_main"]:getSelectedElement()
 				if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
 					mainElementShader(selectedElement, true)
 				end
 			end
-			
-			destroyPreviews() 
-			
+
+			destroyPreviews()
+
 			local positioningColor = (isControlPressed("mtp_toggle_lpos") and highlightPositionColor) or (isControlPressed("mtp_toggle_lpos_s") and highlightPositionSlowColor) or {1, 1, 1, 1}
-			
+
 			if selectedShader then
 				dxSetShaderValue(selectedShader, "color", positioningColor)
 			end
 			if selectedBlip then
 				setBlipColor(selectedBlip, positioningColor[1]*255, positioningColor[2]*255, positioningColor[3]*255, positioningColor[4]*255)
 			end
-			
+
 			if isTimer(keyboardBlockEventTimer) then
 				killTimer(keyboardBlockEventTimer)
 				keyboardBlockEventTimer = nil
 			end
 			removeDebugHook("preFunction", cancelKeyboardEvents)
-			
+
 			if ((button == isControlPressed(button, "mtp_move_right")) or
 				(button == isControlPressed(button, "mtp_move_left")) or
 				(button == isControlPressed(button, "mtp_move_front")) or
@@ -570,44 +621,44 @@ function onKey(button, state)
 				(button == isControlPressed(button, "mtp_move_up")) or
 				(button == isControlPressed(button, "mtp_move_down"))) then
 				if exports["editor_main"]:getMode() == 2 then
-				
+
 					addDebugHook("preFunction", cancelKeyboardEvents, {"triggerServerEvent", "setElementPosition"})
-					
+
 					exports["editor_main"]:dropElement(true)
 					elementHasBeenMoved = true
-					
+
 					if not isElementLocal(selectedElement) then
 						setElementData(localPlayer, "mtp:selectedElement", selectedElement, false)
 						triggerServerEvent("doLockElement", selectedElement)
 					end
-					
+
 				end
 			end
-			
+
 			keyboardBlockEventTimer = setTimer(function()
 				removeDebugHook("preFunction", cancelKeyboardEvents)
 			end, 500, 1)
-			
+
 			if isTimer(moveLocalElementTimer) then
 				killTimer(moveLocalElementTimer)
 				moveLocalElementTimer = nil
 			end
-			
+
 			if exports["editor_main"]:getMode() == 1 then
 				return
 			end
-			
+
 			local set_slow, set_norm, set_fast = exports["move_keyboard"].getMoveSpeeds()
 			local movementSpeed = (isControlPressed("mtp_toggle_lpos") and (set_norm or 0.5)) or (isControlPressed("mtp_toggle_lpos_s") and (set_slow or 0.02)) or 1
 			movementSpeed = movementSpeed * localPositionSpeed
-			
+
 			setElementData(selectedElement, "mtp:move_origin", getElementMatrix(selectedElement), false)
 			setElementData(selectedElement, "mtp:move_offset", {0, 0, 0}, false)
 
 			local xSpeed = (isControlPressed("mtp_move_right") and movementSpeed) or (isControlPressed("mtp_move_left") and -movementSpeed) or 0
 			local ySpeed = (isControlPressed("mtp_move_front") and movementSpeed) or (isControlPressed("mtp_move_back") and -movementSpeed) or 0
 			local zSpeed = (isControlPressed("mtp_move_up") and movementSpeed) or (isControlPressed("mtp_move_down") and -movementSpeed) or 0
-			
+
 			moveLocalElementTimer = setTimer(function()
 				if not selectedElement then
 					if isTimer(moveLocalElementTimer) then
@@ -624,39 +675,39 @@ function onKey(button, state)
 				setElementPosition(selectedElement, offsetX, offsetY, offsetZ)
 				setElementData(selectedElement, "mtp:move_offset", {newX, newY, newZ}, false)
 			end, getFPSLimit()/1000, 0)
-			
+
 		else
-		
+
 			-- // ON RELEASE
-		
+
 			if isTimer(moveLocalElementTimer) then
 				killTimer(moveLocalElementTimer)
 				moveLocalElementTimer = nil
 			end
-			
+
 			if not ((isControlPressed("mtp_move_right")) or
 				(isControlPressed("mtp_move_left")) or
 				(isControlPressed("mtp_move_front")) or
 				(isControlPressed("mtp_move_back")) or
 				(isControlPressed("mtp_move_up")) or
 				(isControlPressed("mtp_move_down"))) then
-				
+
 				--[[
 				local lockedElement = getElementData(localPlayer, "mtp:selectedElement")
 				if lockedElement then
 					triggerServerEvent("doUnlockElement", lockedElement)
 					setElementData(localPlayer, "mtp:selectedElement", nil, false)
 				end]]
-				
+
 				return
 			end
-			
+
 			if isTimer(keyboardBlockEventTimer) then
 				killTimer(keyboardBlockEventTimer)
 				keyboardBlockEventTimer = nil
 			end
 			removeDebugHook("preFunction", cancelKeyboardEvents)
-			
+
 			if exports["editor_main"]:getMode() == 2 then
 				addDebugHook("preFunction", cancelKeyboardEvents, {"triggerServerEvent", "setElementPosition"})
 				exports["editor_main"]:dropElement(true)
@@ -665,23 +716,23 @@ function onKey(button, state)
 					triggerServerEvent("doLockElement", selectedElement)
 				end
 			end
-			
+
 			keyboardBlockEventTimer = setTimer(function()
 				removeDebugHook("preFunction", cancelKeyboardEvents)
 			end, 500, 1)
-			
+
 			local currentX, currentY, currentZ = getElementPosition(selectedElement)
 			triggerServerEvent("mtp:applyProperty", selectedElement, {position = {currentX, currentY, currentZ}})
-		
+
 			if exports["editor_main"]:getMode() == 1 then
 				return
 			end
-			
+
 			elementHasBeenMoved = true
-			
+
 			setElementData(selectedElement, "mtp:move_origin", getElementMatrix(selectedElement), false)
 			setElementData(selectedElement, "mtp:move_offset", {0, 0, 0}, false)
-		
+
 			local set_slow, set_norm, set_fast = exports["move_keyboard"].getMoveSpeeds()
 			local movementSpeed = (isControlPressed("mtp_toggle_lpos") and (set_norm or 0.5)) or (isControlPressed("mtp_toggle_lpos_s") and (set_slow or 0.02)) or 1
 			movementSpeed = movementSpeed * localPositionSpeed
@@ -689,7 +740,7 @@ function onKey(button, state)
 			local xSpeed = (isControlPressed("mtp_move_right") and movementSpeed) or (isControlPressed("mtp_move_left") and -movementSpeed) or 0
 			local ySpeed = (isControlPressed("mtp_move_front") and movementSpeed) or (isControlPressed("mtp_move_back") and -movementSpeed) or 0
 			local zSpeed = (isControlPressed("mtp_move_up") and movementSpeed) or (isControlPressed("mtp_move_down") and -movementSpeed) or 0
-			
+
 			moveLocalElementTimer = setTimer(function()
 				if not selectedElement then
 					if isTimer(moveLocalElementTimer) then
@@ -705,13 +756,13 @@ function onKey(button, state)
 				setElementPosition(selectedElement, offsetX, offsetY, offsetZ)
 				setElementData(selectedElement, "mtp:move_offset", {newX, newY, newZ}, false)
 			end, getFPSLimit()/1000, 0)
-			
+
 		end
-	
+
 	elseif button == (isControlPressed(button, "mtp_toggle_lpos") or isControlPressed(button, "mtp_toggle_lpos_s")) then
 
-		destroyPreviews() 
-		
+		destroyPreviews()
+
 		if not state then
 			if spawnMode == "none" then
 				selectedElement = nil
@@ -724,162 +775,171 @@ function onKey(button, state)
 				setBlipColor(selectedBlip, highlightColor[1]*255, highlightColor[2]*255, highlightColor[3]*255, highlightColor[4]*255)
 			end
 		end
-		
+
 		if isTimer(moveLocalElementTimer) then
 			killTimer(moveLocalElementTimer)
 			moveLocalElementTimer = nil
 		end
-		
+
 		if selectedElement then
-		
+
 			if elementHasBeenMoved then
 				exports["editor_gui"]:outputMessage("Applied local positioning.", highlightPositionColor[1]*255, highlightPositionColor[2]*255, highlightPositionColor[3]*255, 4000)
 				elementHasBeenMoved = false
-	
+
 				local lockedElement = getElementData(localPlayer, "mtp:selectedElement")
 				if lockedElement then
 					triggerServerEvent("doUnlockElement", lockedElement)
 					setElementData(localPlayer, "mtp:selectedElement", nil, false)
 				end
-				
+
 			end
-			
+
 			if not exports["move_freecam"]:getAttachedElement() then
 				exports["editor_main"]:dropElement(true)
 				exports["editor_main"]:selectElement(selectedElement, 2)
 			end
-			
-			createPreviewElements()	
+
+			createPreviewElements()
 		end
-		
-		
+
+
 	elseif toggleLocalRotation and isControlPressed("mtp_toggle_lrot") then
-	
-		if state then 
+
+		if state then
 			if (spawnMode == "none") then
 				selectedElement = exports["editor_main"]:getSelectedElement()
 				if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
 					mainElementShader(selectedElement, true)
 				end
 			end
-			
-			destroyPreviews() 
-			
+
+			destroyPreviews()
+
 			if selectedShader then
 				dxSetShaderValue(selectedShader, "color", highlightRotationColor)
 			end
 			if selectedBlip then
 				setBlipColor(selectedBlip, highlightRotationColor[1]*255, highlightRotationColor[2]*255, highlightRotationColor[3]*255, highlightRotationColor[4]*255)
 			end
-			
-			
+
+
 			if selectedElement then
 				local x, y, z = getElementPosition(selectedElement)
 				local rx, ry, rz = getElementRotation(selectedElement)
-				
-				triggerServerEvent("mtp:applyProperty", selectedElement, {position = {x, y, z}}) 
+
+				triggerServerEvent("mtp:applyProperty", selectedElement, {position = {x, y, z}})
 			else
 				outputDebugString("[MT+] Local rotation failed, 'selectedElement' is invalid.", debugLevel, 0, 255, 0)
 			end
-			
-			return 
+
+			return
 		end
-	
+
 		if (button == isControlPressed(button, "mtp_quick_front") or button == isControlPressed(button, "mtp_quick_back") or button == isControlPressed(button, "mtp_quick_left") or button == isControlPressed(button, "mtp_quick_right") or button == isControlPressed(button, "mtp_quick_up") or button == isControlPressed(button, "mtp_quick_down")) then
-		
+
 			if exports["editor_main"]:getMode() == 2 then
-			
+
 				if (spawnMode == "none") then
 					selectedElement = exports["editor_main"]:getSelectedElement()
 				end
-				
+
 				if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
-				
+
 					if isElementLocal(selectedElement) then outputDebugString("[MT+] Local rotation failed, not editor element.", debugLevel, 0, 255, 0) return end
-					
+
 					cancelEvent(true)
-					
+
 					local rx, ry, rz = getElementRotation(selectedElement)
-					
+
 					local rotationZ = (button == isControlPressed(button, "mtp_quick_left") and localRotationAngle) or (button == isControlPressed(button, "mtp_quick_right") and -localRotationAngle) or 0
 					local rotationX = (button == isControlPressed(button, "mtp_quick_front") and -localRotationAngle) or (button == isControlPressed(button, "mtp_quick_back") and localRotationAngle) or 0
 					local rotationY = (button == isControlPressed(button, "mtp_quick_up") and localRotationAngle) or (button == isControlPressed(button, "mtp_quick_down") and -localRotationAngle) or 0
-					
+
 					rx, ry, rz = rotateZ(rx, ry, rz, rotationZ)
 					rx, ry, rz = rotateX(rx, ry, rz, rotationX)
 					rx, ry, rz = rotateY(rx, ry, rz, rotationY)
-					
+
 					exports.edf:edfSetElementRotation(selectedElement, rx, ry, rz, "ZXY")
-					
+
 					triggerServerEvent("mtp:applyProperty", selectedElement, {rotation = {rx, ry, rz}})
-					
+
 					exports["editor_gui"]:outputMessage("Applied local rotation.", 50, 50, 255, 4000)
 					outputDebugString("[MT+] Rotated locally | X: "..tostring(rotationX).." | Y: "..tostring(rotationY).." | Z: "..tostring(rotationZ)..")", debugLevel, 0, 255, 0)
-					
+
 					if (spawnMode == "none") then
 						selectedElement = nil
 					end
-					
+
 					return true
-					
+
 				end
-			
+
 			else
-			
+
 				outputDebugString("[MT+] Local rotation failed, 'cursorMode' needed.", debugLevel, 0, 255, 0)
-				
+
 			end
-		
+
 		elseif (button == isControlPressed(button, "mtp_features")) then
-		
+
 			if spawnMode == "none" then return end
-		
+
 			if exports["editor_main"]:getMode() == 2 then
-				
+
 				if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
-				
+
 					local totalSpawns = 0
 					local totalFails = 0
-				
+
 					local model = getElementModel(selectedElement)
 					local x, y, z = getElementPosition(selectedElement)
 					local _rx, _ry, _rz = getElementRotation(selectedElement)
 					local scale = getObjectScale(selectedElement)
 					local doublesided = isElementDoubleSided(selectedElement)
 					local collisions = getEditorElementCollisions(selectedElement)
-					
+
 					local data = positionData[model]
 					if data then
-					
-						if #data < 2 then 
-							prompt("Spawning features $$failed##, object unallowed (offsets entries less than 2)!") 
-							return 
+
+						if #data < 2 then
+							prompt("Spawning features $$failed##, object unallowed (offsets entries less than 2)!")
+							return
 						end
-						
+
 						for k,v in ipairs(data) do
-						
+
 							local rx, ry, rz = _rx, _ry, _rz
-						
+
 							while true do
-							
+
 								if k == 1 then break end
-								
+
 								if k >= 3 then
 									if buildFeaturesWindowsOnly then
 										break
 									end
 								end
-								
+
 								local dataX, dataY, dataZ, dataRX, dataRY, dataRZ, additions = unpack(v[2][1])
 								dataX, dataY, dataZ = dataX * scale, dataY * scale, dataZ * scale
-								
+
+								if additions and type(additions) == "table" then
+									if additions.is2DFX and ignoreRotated2DFX then
+										if _rx > 16.26 or _rx < -16.26 or _ry > 16.26 or _ry < -16.26 then
+											totalFails = totalFails + 1
+											break
+										end
+									end
+								end
+
 								local offX, offY, offZ = getPositionFromElementOffset(getElementMatrix(selectedElement), dataX, dataY, dataZ)
-								
+
 								if overlapThreshold and overlapThreshold > 0 then
-								
+
 									local existing = getElementsWithinRange(offX, offY, offZ, overlapThreshold, "object", getElementInterior(localPlayer), exports["editor_main"]:getWorkingDimension())
 									local existingFail = false
-									
+
 									if #existing > 0 then
 										for i=1, #existing do
 											local existingObject = existing[i]
@@ -887,21 +947,21 @@ function onKey(button, state)
 												outputDebugString("[MT+] Spawning feature "..tostring(k-1).." canceled, it already exists in that spot!", debugLevel, 0, 255, 0)
 												existingFail = true
 												totalFails = totalFails + 1
-												break 
+												break
 											end
 										end
 									end
-									
+
 									if existingFail then
 										break
 									end
-									
+
 								end
 
 								local rxAdditional = dataRX ~= nil and dataRX or 0
 								local ryAdditional = dataRY ~= nil and dataRY or 0
 								local rzAdditional = dataRZ ~= nil and dataRZ or 0
-								
+
 								rx, ry, rz = rotateZ(rx, ry, rz, rzAdditional)
 								rx, ry, rz = rotateX(rx, ry, rz, rxAdditional)
 								rx, ry, rz = rotateY(rx, ry, rz, ryAdditional)
@@ -917,59 +977,59 @@ function onKey(button, state)
 										collisions = additions.collisions
 									end
 								end
-								
+
 								triggerServerEvent("mtp:adjacentAccept", localPlayer, {rotation = {rx, ry, rz}, scale = scale, doublesided = doublesided, collisions = collisions, player = localPlayer, mode = "bind"})
 								triggerServerEvent("doCreateElement", localPlayer, "object", "editor_main", {position = {offX, offY, offZ}, rotation = {rx, ry, rz}, model = v[1]}, false, false)
-								
+
 								totalSpawns = totalSpawns + 1
-					
+
 								break
 							end
-							
+
 						end
-					
+
 					else
 						prompt("Spawning features $$failed##, object invalid (no offsets)!")
 						return
 					end
-					
+
 					if totalSpawns == 0 then
 						prompt("Spawning features $$failed##, no features have been created.")
 						outputDebugString("[MT+] No features created.", debugLevel, 0, 255, 0)
 						return
 					end
-					
+
 					triggerServerEvent("mtp:applyProperty", selectedElement, {rotation = {rx, ry, rz}, position = {x, y, z}})
-					
+
 					selectedElement = nil
 					destroyPreviews()
 					mainElementShader()
-					 
+
 					if totalFails == 0 then
 						prompt("Spawning all features #00D000succeeded##!")
 					else
 						prompt("Spawning features ("..tostring(totalSpawns).." of "..tostring(totalSpawns + totalFails)..") #00D000succeeded##!")
 					end
-					
+
 					outputDebugString("[MT+] Added building features.", debugLevel, 0, 255, 0)
-					
+
 					return true
-					
+
 				end
-			
+
 			else
-			
+
 				prompt("Spawning features failed, $$'cursorMode' ##needed!")
 				outputDebugString("[MT+] Adding building features failed, 'cursorMode' needed.", debugLevel, 0, 255, 0)
-				
+
 			end
-			
+
 		end
-		
+
 	elseif button == isControlPressed(button, "mtp_toggle_lrot") then
-	
-		destroyPreviews() 
-		
+
+		destroyPreviews()
+
 		if not state then
 			if spawnMode == "none" then
 				selectedElement = nil
@@ -984,51 +1044,51 @@ function onKey(button, state)
 			exports["editor_main"]:dropElement(true)
 			exports["editor_main"]:selectElement(selectedElement, 2)
 		end
-		
-		createPreviewElements()	
-		
+
+		createPreviewElements()
+
 		outputDebugString("[MT+] Local rotation ended.", debugLevel, 0, 255, 0)
-		
+
 	elseif (spawnMode == "both" or spawnMode == "binds") and (button == isControlPressed(button, "mtp_quick_front") or button == isControlPressed(button, "mtp_quick_back") or button == isControlPressed(button, "mtp_quick_left") or button == isControlPressed(button, "mtp_quick_right")) then
-		
+
 		if state then return end
-		
+
 		if blockedBinds then
 			blockedBinds = false
 			outputDebugString("[MT+] Blocked accidental object creation with binds.", debugLevel, 0, 255, 0)
 			return
 		end
-		
+
 		if isCursorOnGUI() then
 			outputDebugString("[MT+] Spawning with binds canceled because the cursor is hovering over a GUI.", debugLevel, 0, 255, 0)
 			return
 		end
-		
+
 		if exports["editor_main"]:getMode() == 2 then
-			
+
 			if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
-			
+
 				cancelEvent(true)
-			
+
 				local x, y, z = getElementPosition(selectedElement)
-				
-				if bindsFarClip and getDistanceBetweenPoints3D(x, y, z, getElementPosition(localPlayer)) > getFarClipDistance() then 
+
+				if bindsFarClip and getDistanceBetweenPoints3D(x, y, z, getElementPosition(localPlayer)) > getFarClipDistance() then
 					return
 				end
-				
+
 				local spawningTargetModel = 1
-				
+
 				local model = getElementModel(selectedElement)
 				local scale = getObjectScale(selectedElement)
 				local doublesided = isElementDoubleSided(selectedElement)
 				local collisions = getEditorElementCollisions(selectedElement)
 				local rx, ry, rz = exports.edf:edfGetElementRotation(selectedElement)
 				local selectedMatrix = getElementMatrix(selectedElement)
-				
+
 				local data = positionData[model]
-				
+
 				local keyOffset = nil
-				
+
 				if data then
 					if bindUseSelectedModel then
 						spawningTargetModel = previewModel
@@ -1037,7 +1097,7 @@ function onKey(button, state)
 						keyOffset = (button == isControlPressed(button, "mtp_quick_front") and data[spawningTargetModel][2][3]) or (button == isControlPressed(button, "mtp_quick_back") and data[spawningTargetModel][2][4]) or (button == isControlPressed(button, "mtp_quick_right") and data[spawningTargetModel][2][1]) or (button == isControlPressed(button, "mtp_quick_left") and data[spawningTargetModel][2][2]) or nil
 					end
 				end
-				
+
 				if keyOffset then
 					keyOffset = {keyOffset[1] * scale, keyOffset[2] * scale, keyOffset[3] * scale, keyOffset[4], keyOffset[5], keyOffset[6], keyOffset[7]}
 				else
@@ -1049,38 +1109,38 @@ function onKey(button, state)
 					local offsetY = (button == isControlPressed(button, "mtp_quick_front") and (maxY * 2) - 0.03) or (button == isControlPressed(button, "mtp_quick_back") and (minY * 2) + 0.03) or 0
 					keyOffset = {offsetX * scale, offsetY * scale, 0}
 				end
-				
+
 				local creatorModel = (spawningTargetModel == 1 and model) or data[spawningTargetModel][1]
-					
+
 				x, y, z = getPositionFromElementOffset(selectedMatrix, unpack(keyOffset))
-				
+
 				local rxAdditional = keyOffset[4] ~= nil and keyOffset[4] or 0
 				local ryAdditional = keyOffset[5] ~= nil and keyOffset[5] or 0
 				local rzAdditional = keyOffset[6] ~= nil and keyOffset[6] or 0
-				
+
 				rx, ry, rz = rotateZ(rx, ry, rz, rzAdditional)
 				rx, ry, rz = rotateX(rx, ry, rz, rxAdditional)
 				rx, ry, rz = rotateY(rx, ry, rz, ryAdditional)
-				
+
 				if overlapThreshold and overlapThreshold > 0 then
 					local existing = getElementsWithinRange(x, y, z, overlapThreshold, "object", getElementInterior(localPlayer), exports["editor_main"]:getWorkingDimension())
-		
+
 					if #existing > 0 then
 						for i=1, #existing do
 							local existingObject = existing[i]
 							if getElementModel(existingObject) == creatorModel and getElementAlpha(existingObject) == 255 and getElementDimension(existingObject) == exports["editor_main"]:getWorkingDimension() then
 								local eRx, eRy, eRz = getElementRotation(existingObject)
-								if (math.floor(eRx) == math.floor(rx) or math.floor(eRy) == math.floor(ry) or math.floor(eRz) == math.floor(rz)) then 
+								if (math.floor(eRx) == math.floor(rx) or math.floor(eRy) == math.floor(ry) or math.floor(eRz) == math.floor(rz)) then
 									prompt("Spawning $$canceled ##to prevent overlapping!")
-									return 
+									return
 								end
 							end
 						end
 					end
 				end
-				
+
 				destroyPreviews()
-				
+
 				local additions = keyOffset[7]
 				if additions and type(additions) == "table" then
 					if additions.scale ~= nil and type(additions.scale) == "number" then
@@ -1093,37 +1153,37 @@ function onKey(button, state)
 						collisions = additions.collisions
 					end
 				end
-				
+
 				exports["editor_main"]:dropElement(true)
-				
+
 				previewDirection = (button == isControlPressed(button, "mtp_quick_front") and 3) or (button == isControlPressed(button, "mtp_quick_back") and 4) or (button == isControlPressed(button, "mtp_quick_right") and 1) or (button == isControlPressed(button, "mtp_quick_left") and 2) or 1
-				
+
 				if not savedDirections[model] then savedDirections[model] = {} end
 				savedDirections[model].previewModel = spawningTargetModel
 				savedDirections[model].previewDirection = previewDirection
-				
+
 				triggerServerEvent("mtp:adjacentAccept", localPlayer, {rotation = {rx, ry, rz}, scale = scale, doublesided = doublesided, collisions = collisions, player = localPlayer, mode = "bind"})
 				triggerServerEvent("doCreateElement", localPlayer, "object", "editor_main", {position = {x, y, z}, rotation = {rx, ry, rz}, model = creatorModel}, false, false)
-				
+
 				exports["editor_gui"]:outputMessage("Quickly spawned adjacent element.", 255, 100, 0, 4000)
-			
+
 				return true
-				
+
 			end
-		
+
 		end
-	
+
 	elseif button == isControlPressed(button, "mtp_direction_u") or button == isControlPressed(button, "mtp_direction_d") then
-	
+
 		if not state then return end
-	
+
 		local cameraData = {getCameraMatrix()}
-		
+
 		--if guiFocusCancel then outputDebugString("[MT+] Canceled bind, 'guiFocusCancel' got triggered.", debugLevel, 0, 255, 0) return end
-		
+
 		local increment = (button == isControlPressed(button, "mtp_direction_u") and 1) or -1
 		onClick("right", "up", false, false, cameraData[1], cameraData[2], cameraData[3], nil, {directionIncrement = increment, usedBinds = true})
-	
+
 	end
 end
 addEventHandler("onClientKey", root, onKey, false, "low-1384")
@@ -1134,49 +1194,49 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 	if spawnMode == "none" then return end
 	if editorForceCancel then return end
 	if guiGetInputMode() == "no_binds" or isMTAWindowActive() then return end
-		
-	
-	-- // LEFT CLICK	
-	
+
+
+	-- // LEFT CLICK
+
 	if button == "left" and state == "up" then
-		
+
 		if spawnMode == "click" or spawnMode == "both" then
 			if previewElements[clickedElement] then
-			
+
 				if isCursorOnGUI() then
 					outputDebugString("[MT+] Spawning was canceled because the cursor is hovering over a GUI.", debugLevel, 0, 255, 0)
 					return
 				end
-				
+
 				local cameraX, cameraY, cameraZ = getCameraMatrix()
-				if obeyEditorDistanceLimit == true and getDistanceBetweenPoints3D(cameraX, cameraY, cameraZ, worldX, worldY, worldZ) > exports["editor_main"]:getMaxSelectDistance() then 
+				if obeyEditorDistanceLimit == true and getDistanceBetweenPoints3D(cameraX, cameraY, cameraZ, worldX, worldY, worldZ) > exports["editor_main"]:getMaxSelectDistance() then
 					outputDebugString("[MT+] Spawning was canceled by the 'obeyEditorDistanceLimit' cvar.", debugLevel, 0, 255, 0)
-					return 
+					return
 				end
-			
+
 				local model = getElementModel(previewElements[clickedElement])
 				local scale = getObjectScale(previewElements[clickedElement])
 				local doublesided = isElementDoubleSided(previewElements[clickedElement])
 				local collisions = getEditorElementCollisions(selectedElement)
 				local x, y, z = getElementPosition(previewElements[clickedElement])
-				
+
 				local rx, ry, rz = exports.edf:edfGetElementRotation(selectedElement)
-				
+
 				local offX, offY, offZ, offRX, offRY, offRZ = getElementAttachedOffsets(clickedElement)
-				
+
 				rx, ry, rz = rotateZ(rx, ry, rz, offRZ)
 				rx, ry, rz = rotateX(rx, ry, rz, offRX)
 				rx, ry, rz = rotateY(rx, ry, rz, offRY)
-	
+
 				if overlapThreshold and overlapThreshold > 0 then
 					local existing = getElementsWithinRange(x, y, z, overlapThreshold, "object", getElementInterior(localPlayer), exports["editor_main"]:getWorkingDimension())
-			
+
 					if #existing > 0 then
 						for i=1, #existing do
 							local existingObject = existing[i]
 							if getElementModel(existingObject) == model and getElementAlpha(existingObject) == 255 and getElementDimension(existingObject) == exports["editor_main"]:getWorkingDimension() then
 								local eRx, eRy, eRz = getElementRotation(existingObject)
-								if (math.floor(eRx) == math.floor(rx) or math.floor(eRy) == math.floor(ry) or math.floor(eRz) == math.floor(rz)) then 
+								if (math.floor(eRx) == math.floor(rx) or math.floor(eRy) == math.floor(ry) or math.floor(eRz) == math.floor(rz)) then
 									prompt("Spawning $$canceled ##to prevent overlapping!")
 									destroyPreviews()
 									cancelEvent(true)
@@ -1186,15 +1246,15 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 						end
 					end
 				end
-				
+
 				destroyPreviews()
-				
+
 				local lockedElement = getElementData(localPlayer, "mtp:selectedElement")
 				if lockedElement then
 					triggerServerEvent("doUnlockElement", lockedElement)
 					setElementData(localPlayer, "mtp:selectedElement", nil, false)
 				end
-				
+
 				local data = positionData[getElementModel(selectedElement)]
 				if data then
 					local additions = data[previewModel][2][previewDirection][7]
@@ -1210,26 +1270,26 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 						end
 					end
 				end
-	
+
 				triggerServerEvent("mtp:adjacentAccept", localPlayer, {rotation = {rx, ry, rz}, scale = scale, doublesided = doublesided, collisions = collisions, player = localPlayer, mode = "click"})
 				triggerServerEvent("doCreateElement", localPlayer, "object", "editor_main", {position = {x, y, z}, rotation = {rx, ry, rz}, model = model}, false, false)
-				
+
 				exports["editor_gui"]:outputMessage("Spawned adjacent element.", 255, 100, 0, 4000)
-				
+
 				mainElementShader()
-				
+
 				if type(extras) == "table" and extras.doNotCancel == true then
 					-- indeed do not cancel
 				else
 					cancelEvent(true)
 				end
-				
+
 				return
 			end
 		end
-		
+
 		selectedElement = (isElement(clickedElement) == true and clickedElement) or selectedElement
-		
+
 		if allowDropping and not clickedElement then
 			selectedElement = nil
 			destroyPreviews()
@@ -1237,25 +1297,25 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 			outputDebugString("[MT+] Dropped main element.", debugLevel, 0, 255, 0)
 			return
 		end
-		
+
 		if (selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension()) then
-		
+
 			outputDebugString("[MT+] Selected main element.", debugLevel, 0, 255, 0)
-			
+
 			mainElementShader(selectedElement, true)
-		
+
 			local model = getElementModel(selectedElement)
-		
+
 			if type(extras) == "table" and extras.doNotCancel == true then
 				-- indeed do not cancel
 			else
 				cancelEvent(true)
 			end
-			
+
 			if getElementType(selectedElement) == "object" then
-			
+
 				destroyPreviews()
-				
+
 				if positionData[model] then
 					if savedDirections[model] then
 						previewModel = savedDirections[model].previewModel
@@ -1268,20 +1328,20 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 					previewModel = 1
 					if previewDirection > 6 then previewDirection = 1 end
 				end
-				
+
 				if freecamShowPreviews and not exports["move_freecam"]:getAttachedElement() then
 					createPreviewElements()
 				end
 			end
-		
+
 		end
-		
-		
-		
-	-- // RIGHT CLICK	
-		
+
+
+
+	-- // RIGHT CLICK
+
 	elseif button == "right" and state == "up" then
-	
+
 		local directionIncrement, usedBinds
 		if type(extras) == "table" then
 			if extras.directionIncrement ~= nil then
@@ -1293,34 +1353,34 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 		else
 			directionIncrement = 1
 		end
-	
+
 		if previewElements[clickedElement] then
-		
+
 			cancelEvent(true)
-			
+
 			local cameraX, cameraY, cameraZ = getCameraMatrix()
-			if obeyEditorDistanceLimit == true and worldX and getDistanceBetweenPoints3D(cameraX, cameraY, cameraZ, worldX, worldY, worldZ) > 155 then 
+			if obeyEditorDistanceLimit == true and worldX and getDistanceBetweenPoints3D(cameraX, cameraY, cameraZ, worldX, worldY, worldZ) > 155 then
 				outputDebugString("[MT+] Switching model was canceled by the 'obeyEditorDistanceLimit' cvar", debugLevel, 0, 255, 0)
-				return 
+				return
 			end
-			
+
 			destroyPreviews()
 			createPreviewElements()
-			
+
 		end
-		
+
 		local cameraData = {exports["editor_main"]:processCameraLineOfSight()}
-		
+
 		if usedBinds or not (not hoverGhostDirection and exports["editor_main"]:getMode() == 1 and cameraData[4]) then
 		else
 			outputDebugString("[MT+] Denied selecting direction.", debugLevel, 0, 255, 0)
 			return
 		end
-		
+
 		if (selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension()) and not clickedElement then
-		
+
 			local model = getElementModel(selectedElement)
-			
+
 			if positionData[model] then
 				local data = positionData[model][previewModel][2]
 				if data then
@@ -1338,18 +1398,18 @@ function onClick(button, state, absoluteX, absoluteY, worldX, worldY, worldZ, cl
 				elseif previewDirection < 1 then
 					previewDirection = 6
 				end
-			
+
 			end
 
 			if not savedDirections[model] then savedDirections[model] = {} end
 			savedDirections[model].previewModel = previewModel
 			savedDirections[model].previewDirection = previewDirection
-			
+
 			outputDebugString("[MT+] Selected direction: "..tostring(previewDirection), debugLevel, 0, 255, 0)
 
 			destroyPreviews()
 			createPreviewElements()
-				
+
 		end
 	end
 end
@@ -1358,49 +1418,49 @@ addEventHandler("onClientClick", root, onClick, true, "high+1384")
 function createPreviewElements()
 
 	destroyPreviews()
-	
+
 	if not toolEnabled then return end
 	if spawnMode == "none" then return end
 	if editorForceCancel then return end
 	if not (spawnMode == "click" or spawnMode == "both" or bindPreview) then return end
-	
+
 	if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
-		
+
 		local preview
-		
+
 		local selectedMatrix = getElementMatrix(selectedElement)
 		local model = getElementModel(selectedElement)
 		local doublesided = isElementDoubleSided(selectedElement)
 		local scale = getObjectScale(selectedElement)
 		local rx, ry, rz = getElementRotation(selectedElement)
 		local data = positionData[model]
-		
+
 		if savedDirections[model] then
 			previewModel = savedDirections[model].previewModel
 			previewDirection = savedDirections[model].previewDirection
 		end
-		
+
 		if data then
-		
+
 			if not data[previewModel] then
 				previewModel = 1
 				previewDirection = 1
 			end
-			
+
 			local x, y, z = getPositionFromElementOffset(selectedMatrix, data[previewModel][2][previewDirection][1]*scale, data[previewModel][2][previewDirection][2]*scale, data[previewModel][2][previewDirection][3]*scale)
 
 			local rxAdditional = data[previewModel][2][previewDirection][4] ~= nil and data[previewModel][2][previewDirection][4] or 0
 			local ryAdditional = data[previewModel][2][previewDirection][5] ~= nil and data[previewModel][2][previewDirection][5] or 0
 			local rzAdditional = data[previewModel][2][previewDirection][6] ~= nil and data[previewModel][2][previewDirection][6] or 0
-			
+
 			preview = createObject(data[previewModel][1], x, y, z, rx, ry, rz)
-			
+
 			rx, ry, rz = rotateZ(rx, ry, rz, rzAdditional)
 			rx, ry, rz = rotateX(rx, ry, rz, rxAdditional)
 			rx, ry, rz = rotateY(rx, ry, rz, ryAdditional)
-			
+
 			setElementDimension(preview, exports["editor_main"]:getWorkingDimension())
-			
+
 			local additions = data[previewModel][2][previewDirection][7]
 			local additions = data[previewModel][2][previewDirection][7]
 			if additions and type(additions) == "table" then
@@ -1414,35 +1474,35 @@ function createPreviewElements()
 					collisions = additions.collisions
 				end
 			end
-			
+
 			attachElements(preview, selectedElement, data[previewModel][2][previewDirection][1]*scale, data[previewModel][2][previewDirection][2]*scale, data[previewModel][2][previewDirection][3]*scale, rxAdditional, ryAdditional, rzAdditional)
-			
+
 		else
-		
+
 			local minX, minY, minZ, maxX, maxY, maxZ = getElementBoundingBox(selectedElement)
 			local offsetX = (previewDirection == 1 and maxX * 2 - 0.03) or (previewDirection == 2 and minX * 2 + 0.03) or 0
 			local offsetY = (previewDirection == 3 and maxY * 2 - 0.03) or (previewDirection == 4 and minY * 2 + 0.03) or 0
 			local offsetZ = (previewDirection == 5 and maxZ * 2 - 0.03) or (previewDirection == 6 and minZ * 2 + 0.03) or 0
 			local x, y, z = getPositionFromElementOffset(selectedMatrix, offsetX*scale, offsetY*scale, offsetZ*scale)
-			
+
 			preview = createObject(model, x, y, z, rx, ry, rz)
-			
+
 			setElementDimension(preview, exports["editor_main"]:getWorkingDimension())
-			
+
 			attachElements(preview, selectedElement, offsetX*scale, offsetY*scale, offsetZ*scale)
-			
+
 		end
-		
+
 		if preview then
-		
+
 			setElementAlpha(preview, 150)
 			setObjectScale(preview, scale)
 			setElementDoubleSided(preview, doublesided)
 			previewElements[preview] = preview
 			setElementID(preview, "[preview]")
-			
+
 		end
-		
+
 	end
 end
 
@@ -1454,28 +1514,28 @@ addEventHandler("onClientElementCreate", root, function()
 	if editorForceCancel then return end
 	if not selectNewOnClone then return end
 	if bindCreateTimer then return end
-	
+
 	local newObject = source
-	
+
 	setTimer(function()
-		
+
 		local newType = getElementType(newObject)
-		
+
 		if exports["editor_main"]:getSelectedElement() == newObject and newType == "object" then
 			selectedElement = newObject
 			mainElementShader(selectedElement, true)
 			destroyPreviews()
-			
+
 			outputDebugString("[MT+] Selected cloned element: "..tostring(selectedElement), debugLevel, 0, 255, 0)
-			
+
 			if (freecamShowPreviews and exports["editor_main"]:getMode() == 1) or exports["editor_main"]:getMode() == 2 then
 				createPreviewElements()
 			end
 		end
 	end, selectNewOnCloneDelay, 1)
-	
+
 end)
- 
+
 addEvent("onClientElementDestroyed", true)
 addEventHandler("onClientElementDestroyed", root, function()
 	local destroyedObject = source
@@ -1485,7 +1545,7 @@ addEventHandler("onClientElementDestroyed", root, function()
 		destroyPreviews()
 	end
 end)
- 
+
 addEvent("mtp:response", true)
 addEventHandler("mtp:response", root, function(newElement, mode)
 
@@ -1495,11 +1555,11 @@ addEventHandler("mtp:response", root, function(newElement, mode)
 		destroyPreviews()
 		return
 	end
-	
+
 	if not toolEnabled then return end
 	if spawnMode == "none" then return end
 	if editorForceCancel then return end
-	
+
 	if mode == "click" then
 		if selectNewClick then
 			selectedElement = newElement
@@ -1513,7 +1573,7 @@ addEventHandler("mtp:response", root, function(newElement, mode)
 		outputDebugString("[MT+] Spawned element: "..tostring(newElement), debugLevel, 0, 255, 0)
 		destroyPreviews()
 		createPreviewElements()
-		
+
 	elseif mode == "bind" then
 		if selectNewBind then
 			if not selectedElement then
@@ -1533,7 +1593,7 @@ addEventHandler("mtp:response", root, function(newElement, mode)
 		end
 		outputDebugString("[MT+] Spawned element with binds: "..tostring(newElement), debugLevel, 0, 255, 0)
 	end
-	
+
 end)
 
 function renderList()
@@ -1542,7 +1602,7 @@ function renderList()
 	if spawnMode == "none" then return end
 	if editorForceCancel then return end
 	if not renderPreviewList then return end
-	
+
 	if selectedElement and isElement(selectedElement) then
 		local model = getElementModel(selectedElement)
 		dxText("#FFAA00"..tostring(model) .. " ("..engineGetModelNameFromID(model)..")", previewListOffsets.x, previewListOffsets.y, 1)
@@ -1568,7 +1628,7 @@ function renderList()
 			dxText("#64FF64" .. tostring(model) .. ": #FFAA00"..tostring(previewDirection).." #FFFFFFof #22AAFF#6", 50, 340 + 18, 1)
 		end
 	end
-	
+
 end
 addEventHandler("onClientRender", root, renderList)
 
@@ -1597,7 +1657,7 @@ function mainElementShader(element, isSelected)
 	selectedShader = dxCreateShader(shaderCode)
 	if selectedShader then
 		engineApplyShaderToWorldTexture(selectedShader, "*", element, true)
-		if highlightColor and type(highlightColor) == "table" and #highlightColor == 4 then 
+		if highlightColor and type(highlightColor) == "table" and #highlightColor == 4 then
 			dxSetShaderValue(selectedShader, "color", highlightColor)
 		end
 	end
@@ -1627,10 +1687,10 @@ end
 -- // check if our cursor is on a window
 function isCursorOnGUI()
 	if not isCursorShowing() then return false end
-	
+
 	local cX, cY = getCursorPosition()
 	cX, cY = cX*screenW, cY*screenH
-	
+
 	local allGUIs = getElementsByType("gui-window")
 	if #allGUIs > 0 then
 		for i=1, #allGUIs do
@@ -1750,6 +1810,15 @@ function getControlBindings(cmd_name, formatted)
 		return output
 	else
 		-- idk
+	end
+end
+
+-- // Returns model offset index position (fuck knows)
+function getModelOffsetPosition(baseModel, offsetModel)
+	for k,v in ipairs(positionData[baseModel]) do
+		if v[1] == offsetModel then
+			return k
+		end
 	end
 end
 

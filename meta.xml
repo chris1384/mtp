@@ -1,5 +1,5 @@
 <meta>
-	<info author="chris1384" version="1.4.1" name="Magic Tool+" type="script" description="Cloning has been nerfed."/>
+	<info author="chris1384" version="1.4.2" name="Magic Tool+" type="script" description="Cloning has been nerfed."/>
 	<min_mta_version client="1.5.6-9.18728" server="1.5.6-9.18728"></min_mta_version>
 	
 	<script src="client.lua" type="client" cache="false"/>
