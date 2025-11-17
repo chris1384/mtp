@@ -1466,7 +1466,7 @@ function createPreviewElements()
 			local additions = data[previewModel][2][previewDirection][7]
 			if additions and type(additions) == "table" then
 				if additions.scale ~= nil and type(additions.scale) == "number" then
-					scale = scale * additions.scale
+					additional_scale = additions.scale
 				end
 				if additions.doublesided ~= nil and type(additions.doublesided) == "boolean" then
 					doublesided = additions.doublesided
@@ -1497,7 +1497,7 @@ function createPreviewElements()
 		if preview then
 
 			setElementAlpha(preview, 150)
-			setObjectScale(preview, scale)
+			setObjectScale(preview, scale*additional_scale)
 			setElementDoubleSided(preview, doublesided)
 			previewElements[preview] = preview
 			setElementID(preview, "[preview]")
@@ -1610,6 +1610,7 @@ function renderList()
 		local elementData = positionData[model]
 		if elementData then
 			for i=1,#elementData do
+				local x_offset = math.floor(i/16)
 				local modelData = elementData[i]
 				local previewRenderDirection = ""
 				if previewModel == i then
@@ -1623,7 +1624,8 @@ function renderList()
 				else
 					previewRenderDirection = "#22AAFF#"..tostring(#modelData[2])
 				end
-				dxText(((previewModel == i and "#64FF64") or "#A0A0A0") .. tostring(modelData[1]) .. ": "..previewRenderDirection, previewListOffsets.x + 10, previewListOffsets.y + 18 * i, 1)
+				local row_offset = i%16
+				dxText(((previewModel == i and "#64FF64") or "#A0A0A0") .. tostring(modelData[1]) .. ": "..previewRenderDirection, previewListOffsets.x + 10 + x_offset*100, previewListOffsets.y + 18 * row_offset + 18*x_offset, 1)
 			end
 		else
 			dxText("#64FF64" .. tostring(model) .. ": #FFAA00"..tostring(previewDirection).." #FFFFFFof #22AAFF#6", 50, 340 + 18, 1)
@@ -1778,7 +1780,6 @@ function convertRotationFromMTA(rotX, rotY, rotZ)
 end
 
 -- // CUSTOM KEYBINDS
-
 function isControlPressed(key, cmd_name)
 	if not cmd_name then
 		local keys = getBoundKeys(keyBindings[key].friendlyName)
