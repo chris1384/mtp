@@ -1432,6 +1432,7 @@ function createPreviewElements()
 		local model = getElementModel(selectedElement)
 		local doublesided = isElementDoubleSided(selectedElement)
 		local scale = getObjectScale(selectedElement)
+		local additional_scale = 1
 		local rx, ry, rz = getElementRotation(selectedElement)
 		local data = positionData[model]
 
