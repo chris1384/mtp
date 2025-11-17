@@ -759,6 +759,7 @@ function onKey(button, state)
 
 		end
 
+	-- // LOCAL POSITIONING RELEASE
 	elseif button == (isControlPressed(button, "mtp_toggle_lpos") or isControlPressed(button, "mtp_toggle_lpos_s")) then
 
 		destroyPreviews()
@@ -804,9 +805,18 @@ function onKey(button, state)
 		end
 
 
+	-- // LOCAL ROTATION
 	elseif toggleLocalRotation and isControlPressed("mtp_toggle_lrot") then
 
+		local rotationAngle = localRotationAngle
+		local rotationColor = highlightRotationColor
+		if getKeyState("lshift") then
+			rotationColor = {0, 1, 1, 1}
+			rotationAngle = 90
+		end
+
 		if state then
+			
 			if (spawnMode == "none") then
 				selectedElement = exports["editor_main"]:getSelectedElement()
 				if selectedElement and isElement(selectedElement) and getElementDimension(selectedElement) == exports["editor_main"]:getWorkingDimension() then
@@ -817,10 +827,10 @@ function onKey(button, state)
 			destroyPreviews()
 
 			if selectedShader then
-				dxSetShaderValue(selectedShader, "color", highlightRotationColor)
+				dxSetShaderValue(selectedShader, "color", rotationColor)
 			end
 			if selectedBlip then
-				setBlipColor(selectedBlip, highlightRotationColor[1]*255, highlightRotationColor[2]*255, highlightRotationColor[3]*255, highlightRotationColor[4]*255)
+				setBlipColor(selectedBlip, rotationColor[1]*255, rotationColor[2]*255, rotationColor[3]*255, rotationColor[4]*255)
 			end
 
 
@@ -852,9 +862,9 @@ function onKey(button, state)
 
 					local rx, ry, rz = getElementRotation(selectedElement)
 
-					local rotationZ = (button == isControlPressed(button, "mtp_quick_left") and localRotationAngle) or (button == isControlPressed(button, "mtp_quick_right") and -localRotationAngle) or 0
-					local rotationX = (button == isControlPressed(button, "mtp_quick_front") and -localRotationAngle) or (button == isControlPressed(button, "mtp_quick_back") and localRotationAngle) or 0
-					local rotationY = (button == isControlPressed(button, "mtp_quick_up") and localRotationAngle) or (button == isControlPressed(button, "mtp_quick_down") and -localRotationAngle) or 0
+					local rotationZ = (button == isControlPressed(button, "mtp_quick_left") and rotationAngle) or (button == isControlPressed(button, "mtp_quick_right") and -rotationAngle) or 0
+					local rotationX = (button == isControlPressed(button, "mtp_quick_front") and -rotationAngle) or (button == isControlPressed(button, "mtp_quick_back") and rotationAngle) or 0
+					local rotationY = (button == isControlPressed(button, "mtp_quick_up") and rotationAngle) or (button == isControlPressed(button, "mtp_quick_down") and -rotationAngle) or 0
 
 					rx, ry, rz = rotateZ(rx, ry, rz, rotationZ)
 					rx, ry, rz = rotateX(rx, ry, rz, rotationX)
@@ -864,7 +874,7 @@ function onKey(button, state)
 
 					triggerServerEvent("mtp:applyProperty", selectedElement, {rotation = {rx, ry, rz}})
 
-					exports["editor_gui"]:outputMessage("Applied local rotation.", 50, 50, 255, 4000)
+					exports["editor_gui"]:outputMessage("Applied local rotation.", rotationColor[1]*255, rotationColor[2]*255, rotationColor[3]*255, 4000)
 					outputDebugString("[MT+] Rotated locally | X: "..tostring(rotationX).." | Y: "..tostring(rotationY).." | Z: "..tostring(rotationZ)..")", debugLevel, 0, 255, 0)
 
 					if (spawnMode == "none") then
